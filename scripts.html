@@ -1,0 +1,75 @@
+<script>
+	let toggledTickets = {};
+	let toggledJobs = {};
+	let ticketInfo;
+
+	function getBodyHtmlAction() {
+		google.script.run.withSuccessHandler(getBodyHtmlFinish).getJobs();
+	}
+
+	function getBodyHtmlFinish(output) {
+		ticketInfo = output[1];
+		output = output[0];
+		document.getElementById('mainContainer').innerHTML = output;
+		document.getElementById('loadingDiv').innerHTML = "";
+	}
+
+	function toggleJob(id) {
+		if (toggledJobs[id] == undefined) {
+			toggledJobs[id] = true;
+			document.getElementById(`jobInfo${id}`).style.visibility = 'visible';
+			document.getElementById(`jobInfo${id}`).style.height = '100%';
+		} else {
+			if (toggledJobs[id] == true) {
+				document.getElementById(`jobInfo${id}`).style.visibility = 'hidden';
+				document.getElementById(`jobInfo${id}`).style.height = '0px';
+				toggledJobs[id] = false;
+			} else {
+				document.getElementById(`jobInfo${id}`).style.visibility = 'visible';
+				document.getElementById(`jobInfo${id}`).style.height = '100%';
+				toggledJobs[id] = true;
+			}
+		}
+
+	}
+
+	function expandTicket(ticket, job) {
+		console.log(toggledTickets);
+		if (toggledTickets[ticket] == undefined) {
+			console.log(`expand ticket 1`);
+			toggledTickets[ticket] = true;
+			google.script.run.withSuccessHandler(expandTicketFinish).loadImage(ticket, ticketInfo);
+		} else if (toggledTickets[ticket] == true) {
+			console.log(`expand ticket 2`);
+			document.getElementById(`${ticket}Image`).style.height = "0px";
+			document.getElementById(`${ticket}Text`).style.height = "0px";
+			document.getElementById(`${ticket}Table`).style.height = "0px";
+			document.getElementById(`${ticket}Content`).style.visibility = "hidden";
+			toggledTickets[ticket] = false;
+			return;
+		} else {
+			console.log(`expand ticket 3`);
+			document.getElementById(`${ticket}Image`).style.height = "auto";
+			document.getElementById(`${ticket}Text`).style.height = "100%";
+			document.getElementById(`${ticket}Table`).style.height = "100%";
+			document.getElementById(`${ticket}Content`).style.visibility = "visible";
+			toggledTickets[ticket] = true;
+		}
+		// google.script.run.withSuccessHandler(expandTicketFinish).expandTicketGAS(ticket);
+	}
+
+	function expandTicketFinish(info) {
+		let table = info[3];
+		let ticket = info[1];
+		let text = info[2];
+		let bytes = info[0];
+
+		document.getElementById(`${ticket}Content`).style.visibility = "visible";
+		document.getElementById(`${ticket}Image`).src = "data:image/png;base64," + bytes;
+		document.getElementById(`${ticket}Image`).style.height = "auto";
+		document.getElementById(`${ticket}Text`).textContent = text;
+		document.getElementById(`${ticket}Text`).style.height = "100%";
+		document.getElementById(`${ticket}Table`).innerHTML = table;
+		document.getElementById(`${ticket}Table`).style.height = "100%";
+	}
+</script>
